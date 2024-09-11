@@ -8,6 +8,7 @@ import (
 
 func main() {
 
+	// Adicionar URLs para avaliar neste slice.
 	sliceSites := []string{
 		"https://httpbin.org/status/200",
 		"https://httpbin.org/status/404",
