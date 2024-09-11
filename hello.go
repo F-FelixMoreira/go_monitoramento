@@ -8,29 +8,36 @@ import (
 
 func main() {
 
-	exibeIntroducao()
-	comandoLido := lerComando()
-	exibirMenu()
-
-	switch comandoLido {
-	case 0:
-		fmt.Println("Saindo do programa")
-	case 1:
-		iniciarMonitoramento()
-	case 2:
-		fmt.Println("Sair do programa")
-		sairDoPrograma()
-	default:
-		fmt.Println("Opção inválida. Tente novamente.")
-		os.Exit(-1)
+	sliceSites := []string{
+		"https://httpbin.org/status/200",
+		"https://httpbin.org/status/404",
 	}
 
+	exibirIntroducao()
+
+	for {
+		exibirMenu()
+		comandoLido := lerComando()
+
+		switch comandoLido {
+		case 0:
+			fmt.Println("Saindo do programa")
+		case 1:
+			iniciarMonitoramento(sliceSites)
+		case 2:
+			fmt.Println("Sair do programa")
+			sairDoPrograma()
+		default:
+			fmt.Println("Opção inválida. Tente novamente.")
+			os.Exit(-1)
+		}
+	}
 }
 
-func exibeIntroducao() {
+func exibirIntroducao() {
 	nome := "Felix"
 	versao := 1.1
-	fmt.Println("Ola,", nome)
+	fmt.Println("\nOla,", nome)
 	fmt.Println("Você está utilizando a versão:", versao)
 }
 
@@ -52,19 +59,19 @@ func sairDoPrograma() {
 	os.Exit(0)
 }
 
-func iniciarMonitoramento() {
+func iniciarMonitoramento(sites []string) {
+	fmt.Println("\n__________________\n")
 	fmt.Println("Monitorando...")
-	url := "https://httpbin.org/status/200" // ou /404
-	resp, _ := http.Get(url)
 
-	if resp.StatusCode == 200 {
-		fmt.Println("Status do request: OK")
-		fmt.Println(resp)
-	} else {
-		fmt.Println("Status do request: Não OK")
+	for idx, site := range sites {
+		fmt.Println("\nMonitorando site nº: ", idx+1)
+		resp, _ := http.Get(site)
+
+		if resp.StatusCode == 200 {
+			fmt.Println("\nStatus do request: OK")
+			fmt.Println(resp)
+		} else {
+			fmt.Println("\nStatus do request: Não OK")
+		}
 	}
-
 }
-
-//https://httpbin.org/status/200
-//https://httpbin.org/status/404
