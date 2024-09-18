@@ -1,20 +1,18 @@
 package main // Principal pacote da nossa aplicação
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {
 
-	// Adicionar URLs para avaliar neste slice.
-	sliceSites := []string{
-		"https://httpbin.org/status/200",
-		"https://httpbin.org/status/404",
-	}
-
 	exibirIntroducao()
+	sliceSites := lerSitesArquivos("sites.txt")
 
 	for {
 		exibirMenu()
@@ -75,4 +73,32 @@ func iniciarMonitoramento(sites []string) {
 			fmt.Println("\nStatus do request: Não OK")
 		}
 	}
+}
+
+func lerSitesArquivos(endereco string) []string {
+
+	var sites []string
+
+	arquivo, err := os.Open(endereco)
+
+	if err != nil {
+		fmt.Println("Erro ao abrir o arquivo:", err)
+		os.Exit(1)
+	}
+
+	leitor := bufio.NewReader(arquivo)
+
+	for {
+		linha, err := leitor.ReadString('\n')
+		linha = strings.TrimSpace(linha)
+		sites = append(sites, linha)
+
+		if err == io.EOF {
+			fmt.Println("lista de sites:", sites)
+			break
+		}
+	}
+
+	return sites
+
 }
