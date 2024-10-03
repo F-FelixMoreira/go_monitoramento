@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -24,7 +26,10 @@ func main() {
 		case 1:
 			iniciarMonitoramento(sliceSites)
 		case 2:
-			fmt.Println("Sair do programa")
+			fmt.Println("Exibição de log inativa.")
+			sairDoPrograma()
+		case 3:
+			fmt.Println("Programa encerrado, até mais :)")
 			sairDoPrograma()
 		default:
 			fmt.Println("Opção inválida. Tente novamente.")
@@ -49,7 +54,8 @@ func lerComando() int {
 }
 
 func exibirMenu() {
-	fmt.Println("1 -Iniciar monitoramento")
+	fmt.Println("\n__________ MENU _________\n")
+	fmt.Println("\n1 - Iniciar monitoramento")
 	fmt.Println("2 - Exibir log")
 	fmt.Println("3 - Sair do programa")
 }
@@ -60,26 +66,37 @@ func sairDoPrograma() {
 
 func iniciarMonitoramento(sites []string) {
 	fmt.Println("\n__________________\n")
-	fmt.Println("Monitorando...")
+	fmt.Println("Monitoramento iniciado...")
 
 	for idx, site := range sites {
 		fmt.Println("\nMonitorando site nº: ", idx+1)
-		resp, _ := http.Get(site)
+		testarSite(site)
+	}
 
-		if resp.StatusCode == 200 {
-			fmt.Println("\nStatus do request: OK")
-			fmt.Println(resp)
-		} else {
-			fmt.Println("\nStatus do request: Não OK")
-		}
+	fmt.Println("\nMonitoramento encerrado.")
+}
+
+func testarSite(site string) {
+	resp, err := http.Get(site)
+
+	if err != nil {
+		fmt.Println("Houve um erro ocorrido ao tentar ler o site: ", err)
+	}
+
+	if resp.StatusCode == 200 {
+		fmt.Println("\n O site", site, "está funcional.")
+		registrarLog(site, true)
+	} else {
+		fmt.Println("\n O site", site, "está não está funcional. Status Code:",
+			resp.StatusCode)
+		registrarLog(site, false)
 	}
 }
 
-func lerSitesArquivos(endereco string) []string {
-
+func lerSitesArquivos(endereco_arquivo_sites string) []string {
 	var sites []string
 
-	arquivo, err := os.Open(endereco)
+	arquivo, err := os.Open(endereco_arquivo_sites)
 
 	if err != nil {
 		fmt.Println("Erro ao abrir o arquivo:", err)
@@ -98,7 +115,21 @@ func lerSitesArquivos(endereco string) []string {
 			break
 		}
 	}
-
+	arquivo.Close()
 	return sites
+}
 
+func registrarLog(site string, status bool) {
+	//horario, site, status, erro
+	arquivo, err := os.OpenFile("log_sites_status.txt", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
+
+	if err != nil {
+		fmt.Println("Erro ao abrir o arquivo:", err)
+		return
+	}
+
+	horario := time.Now().Format("02/01/2006 15:04:05")
+	arquivo.WriteString(horario + " | " + site + " | status: " + strconv.FormatBool(status) + "\n")
+
+	arquivo.Close()
 }
