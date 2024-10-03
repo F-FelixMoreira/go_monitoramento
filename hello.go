@@ -11,23 +11,23 @@ import (
 	"time"
 )
 
+const monitoramentos = 5
+const delay_segundos = 5
+
 func main() {
 
 	exibirIntroducao()
-	sliceSites := lerSitesArquivos("sites.txt")
 
 	for {
 		exibirMenu()
 		comandoLido := lerComando()
 
 		switch comandoLido {
-		case 0:
-			fmt.Println("Saindo do programa")
+
 		case 1:
-			iniciarMonitoramento(sliceSites)
+			iniciarMonitoramento()
 		case 2:
-			fmt.Println("Exibição de log inativa.")
-			sairDoPrograma()
+			exibirLog()
 		case 3:
 			fmt.Println("Programa encerrado, até mais :)")
 			sairDoPrograma()
@@ -54,7 +54,7 @@ func lerComando() int {
 }
 
 func exibirMenu() {
-	fmt.Println("\n__________ MENU _________\n")
+	fmt.Println("\n__________ MENU _________")
 	fmt.Println("\n1 - Iniciar monitoramento")
 	fmt.Println("2 - Exibir log")
 	fmt.Println("3 - Sair do programa")
@@ -64,16 +64,21 @@ func sairDoPrograma() {
 	os.Exit(0)
 }
 
-func iniciarMonitoramento(sites []string) {
+func iniciarMonitoramento() {
 	fmt.Println("\n__________________\n")
-	fmt.Println("Monitoramento iniciado...")
+	fmt.Println("--- | Monitoramento iniciado...")
 
-	for idx, site := range sites {
-		fmt.Println("\nMonitorando site nº: ", idx+1)
-		testarSite(site)
+	sliceSites := lerSitesArquivos("sites.txt")
+
+	for i := 0; i < monitoramentos; i++ {
+		for idx, site := range sliceSites {
+			fmt.Println("\nMonitorando site nº: ", idx+1)
+			testarSite(site)
+		}
+		time.Sleep(delay_segundos * time.Second)
 	}
 
-	fmt.Println("\nMonitoramento encerrado.")
+	fmt.Println("\n --- | Monitoramento encerrado.")
 }
 
 func testarSite(site string) {
@@ -84,10 +89,10 @@ func testarSite(site string) {
 	}
 
 	if resp.StatusCode == 200 {
-		fmt.Println("\n O site", site, "está funcional.")
+		fmt.Println("O site", site, "está funcional.")
 		registrarLog(site, true)
 	} else {
-		fmt.Println("\n O site", site, "está não está funcional. Status Code:",
+		fmt.Println("O site", site, "está não está funcional. Status Code:",
 			resp.StatusCode)
 		registrarLog(site, false)
 	}
@@ -132,4 +137,17 @@ func registrarLog(site string, status bool) {
 	arquivo.WriteString(horario + " | " + site + " | status: " + strconv.FormatBool(status) + "\n")
 
 	arquivo.Close()
+}
+
+func exibirLog() {
+
+	arquivo, err := os.ReadFile("log_sites_status.txt")
+
+	if err != nil {
+		fmt.Println("Erro ao ler o arquivo de LOG:", err)
+		return
+	}
+
+	fmt.Println("\n__________ LOG _________")
+	fmt.Println(string(arquivo))
 }
